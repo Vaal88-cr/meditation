@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Медитация">
+  <meta name="theme-color" content="#8b7355">
+  <title>Медитация — Диспенза</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <style>
+    :root {
+      --bg: #f8f5f0;
+      --card: #ffffff;
+      --accent: #8b7355;
+      --accent-light: #c9a97a;
+      --accent-pale: #f0e8df;
+      --text: #3a3a3a;
+      --text-muted: #8a8a8a;
+      --border: #e8e0d5;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --r: 16px;
+      --rs: 10px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      padding-bottom: calc(var(--safe-bottom) + 24px);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Header ── */
+    .hdr {
+      background: linear-gradient(135deg, #8b7355 0%, #a89070 100%);
+      color: #fff;
+      padding: calc(var(--safe-top) + 28px) 20px 28px;
+      text-align: center;
+    }
+    .hdr h1 { font-size: 21px; font-weight: 600; letter-spacing: 0.2px; }
+    .hdr p  { font-size: 13px; opacity: 0.78; margin-top: 6px; }
+
+    /* ── Accordion wrapper ── */
+    .wrap {
+      padding: 16px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* ── Week card ── */
+    .card {
+      background: var(--card);
+      border-radius: var(--r);
+      margin-bottom: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      transition: box-shadow .25s;
+    }
+    .card.open { box-shadow: 0 4px 18px rgba(139,115,85,.14); }
+
+    .card-hdr {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 15px 18px;
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .num {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: var(--accent-pale);
+      color: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 16px;
+      flex-shrink: 0;
+      transition: background .2s, color .2s;
+    }
+    .card.open .num { background: var(--accent); color: #fff; }
+
+    .ttl { flex: 1; min-width: 0; }
+    .ttl-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .8px; }
+    .ttl-name  { font-size: 17px; font-weight: 600; margin-top: 2px; }
+
+    .chev {
+      width: 20px; height: 20px;
+      color: var(--text-muted);
+      transition: transform .3s, color .25s;
+      flex-shrink: 0;
+    }
+    .card.open .chev { transform: rotate(180deg); color: var(--accent); }
+
+    /* ── Accordion body (grid trick) ── */
+    .body {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows .35s ease;
+    }
+    .card.open .body { grid-template-rows: 1fr; }
+    .body-inner { overflow: hidden; min-height: 0; }
+    .body-pad {
+      padding: 6px 18px 22px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Content sections ── */
+    .sec { margin-top: 20px; }
+    .sec-ttl {
+      font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1px;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+    .sec-text { font-size: 15px; line-height: 1.65; }
+
+    /* bullet list */
+    .blist { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .blist li {
+      font-size: 15px; line-height: 1.55;
+      padding-left: 18px; position: relative;
+    }
+    .blist li::before {
+      content: '';
+      position: absolute; left: 0; top: 9px;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent-light);
+    }
+
+    /* technique card */
+    .tech {
+      background: var(--accent-pale);
+      border-radius: var(--rs);
+      padding: 14px 16px;
+      margin-bottom: 10px;
+    }
+    .tech-name { font-size: 15px; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+    .tech-desc { font-size: 14px; line-height: 1.6; margin-bottom: 12px; }
+
+    .slist {
+      list-style: none;
+      counter-reset: s;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .slist li {
+      counter-increment: s;
+      font-size: 14px; line-height: 1.5;
+      padding-left: 28px; position: relative;
+    }
+    .slist li::before {
+      content: counter(s);
+      position: absolute; left: 0; top: 1px;
+      width: 20px; height: 20px;
+      background: var(--accent); color: #fff;
+      border-radius: 50%;
+      font-size: 11px; font-weight: 700;
+      text-align: center; line-height: 20px;
+    }
+
+    /* tips */
+    .tlist { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+    .tlist li {
+      font-size: 14px; line-height: 1.55;
+      padding: 10px 14px;
+      background: #fffaf5;
+      border-left: 3px solid var(--accent-light);
+      border-radius: 0 var(--rs) var(--rs) 0;
+    }
+
+    /* questions */
+    .qlist {
+      list-style: none;
+      counter-reset: q;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .qlist li {
+      counter-increment: q;
+      font-size: 14px; line-height: 1.55;
+      padding: 11px 14px 11px 34px;
+      background: var(--bg);
+      border-radius: var(--rs);
+      position: relative;
+    }
+    .qlist li::before {
+      content: counter(q);
+      position: absolute; left: 12px; top: 13px;
+      font-weight: 700; color: var(--accent); font-size: 13px;
+    }
+
+    /* video */
+    .vid-wrap {
+      position: relative; width: 100%; padding-top: 56.25%;
+      border-radius: var(--rs); overflow: hidden;
+      background: #ece6de;
+    }
+    .vid-wrap iframe {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%; border: none;
+    }
+    .vid-ph {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted); font-size: 14px;
+    }
+
+    /* coming soon */
+    .soon {
+      padding: 24px 0 6px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+<header class="hdr">
+  <h1>Медитация по Диспенза</h1>
+  <p>4-недельная подготовительная программа</p>
+</header>
+
+<main>
+  <div class="wrap" id="acc"></div>
+</main>
+
+<script>
+// ── DATA ─────────────────────────────────────────────────────────────────────
+
+const WEEKS = [
+  {
+    week: 1,
+    chapter: 'Глава 10',
+    title: 'Индукция',
+    goal: 'Научиться переходить из бета-диапазона (аналитический ум, режим выживания) в альфа/тета-диапазон (подсознание). Это фундамент всей медитации — без него невозможны следующие этапы. Посвятите технике минимум неделю: она занимает первые 20 минут каждого сеанса.',
+    preparation: [
+      'Сядьте прямо и закройте глаза — это перекроет основной канал сенсорной информации',
+      'Заранее уберите телефон и домашних животных в другую комнату',
+      'По желанию включите расслабляющую музыку — она ускоряет переход в альфа-состояние',
+      'Откажитесь от сопротивления и погрузитесь в настоящий момент',
+      'Относитесь к себе с истинной любовью',
+    ],
+    techniques: [
+      {
+        name: 'Части тела',
+        description: 'Последовательно концентрируйтесь на положении каждой части тела в пространстве, двигаясь сверху вниз. Ощущайте плотность, тяжесть и объём каждой области.',
+        steps: [
+          'Сфокусируйтесь на макушке, плавно спускайтесь к шее',
+          'Переведите внимание на нос, затем уши',
+          'Двигайтесь: грудь → живот → бёдра → ступни',
+          'Почувствуйте каплевидное пространство непосредственно вокруг тела',
+          'Расширьте осознанность на всю комнату — её объём и пространство',
+          'Уделяйте каждому объекту 20–30 секунд; на всё ~20 минут',
+        ],
+      },
+      {
+        name: 'Прибывающая вода',
+        description: 'Представьте, что комната постепенно наполняется водой снизу вверх. Сначала ощутите пространство комнаты, затем следите за поднимающейся водой.',
+        steps: [
+          'Ощутите объём и пространство комнаты',
+          'Вода доходит до щиколоток, поднимается по икрам к колену',
+          'Покрывает бёдра, поднимается до живота и груди',
+          'Скрывает плечи, достигает шеи, подбородка, губ',
+          'Голова уходит под воду — вся комната заполнена',
+        ],
+      },
+    ],
+    tips: [
+      'Уделяйте каждому объекту не менее 20–30 секунд — не торопитесь',
+      'Опорные слова: почувствуйте, ощутите, заметьте, осознайте, переместите фокус',
+      'Ориентиры ощущений: объём, плотность, периметр, вес, пространство',
+      'К моменту, как дойдёте до ступней, вы почувствуете сдвиги в осознании',
+      'Если мысли уходят в прошлое или будущее — мягко верните внимание к телу',
+    ],
+    homework: [
+      'Практикуйте индукцию ежедневно не менее одной недели',
+      'Попробуйте обе техники поочерёдно, выберите ту, что подходит вам больше',
+      'Можно изобрести собственную технику — главное, переходить в альфа-диапазон',
+    ],
+    questions: [],
+    videoId: 'J7abdp2aY6Q',
+  },
+  {
+    week: 2,
+    chapter: 'Глава 11',
+    title: 'Неизвестное',
+    goal: null,
+    preparation: [], techniques: [], tips: [], homework: [], questions: [],
+    videoId: '',
+  },
+  {
+    week: 3,
+    chapter: 'Глава 12',
+    title: 'Ощущение будущего',
+    goal: null,
+    preparation: [], techniques: [], tips: [], homework: [], questions: [],
+    videoId: '',
+  },
+  {
+    week: 4,
+    chapter: 'Глава 13',
+    title: 'Полная медитация',
+    goal: null,
+    preparation: [], techniques: [], tips: [], homework: [], questions: [],
+    videoId: '',
+  },
+];
+
+// ── STATE & RENDER ────────────────────────────────────────────────────────────
+
+let active = parseInt(localStorage.getItem('md-week') ?? '0');
+
+function render() {
+  document.getElementById('acc').innerHTML = WEEKS.map((w, i) => `
+    <div class="card ${active === i ? 'open' : ''}" id="c${i}">
+      <div class="card-hdr" onclick="toggle(${i})">
+        <div class="num">${w.week}</div>
+        <div class="ttl">
+          <div class="ttl-label">${w.chapter} · Неделя ${w.week}</div>
+          <div class="ttl-name">${w.title}</div>
+        </div>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="body-inner">
+          <div class="body-pad">${content(w)}</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function content(w) {
+  if (!w.goal) return `<p class="soon">Контент этой недели будет добавлен.</p>`;
+
+  let h = '';
+
+  h += `<div class="sec">
+    <div class="sec-ttl">Цель недели</div>
+    <p class="sec-text">${w.goal}</p>
+  </div>`;
+
+  if (w.preparation.length) h += `<div class="sec">
+    <div class="sec-ttl">Подготовка</div>
+    <ul class="blist">${w.preparation.map(x => `<li>${x}</li>`).join('')}</ul>
+  </div>`;
+
+  if (w.techniques.length) h += `<div class="sec">
+    <div class="sec-ttl">${w.techniques.length > 1 ? 'Техники' : 'Техника'}</div>
+    ${w.techniques.map(t => `
+      <div class="tech">
+        <div class="tech-name">${t.name}</div>
+        <p class="tech-desc">${t.description}</p>
+        ${t.steps?.length ? `<ul class="slist">${t.steps.map(s => `<li>${s}</li>`).join('')}</ul>` : ''}
+      </div>`).join('')}
+  </div>`;
+
+  if (w.tips.length) h += `<div class="sec">
+    <div class="sec-ttl">На что обратить внимание</div>
+    <ul class="tlist">${w.tips.map(x => `<li>${x}</li>`).join('')}</ul>
+  </div>`;
+
+  if (w.homework.length) h += `<div class="sec">
+    <div class="sec-ttl">Домашнее задание</div>
+    <ul class="blist">${w.homework.map(x => `<li>${x}</li>`).join('')}</ul>
+  </div>`;
+
+  if (w.questions.length) h += `<div class="sec">
+    <div class="sec-ttl">Вопросы для практики</div>
+    <ol class="qlist">${w.questions.map(x => `<li>${x}</li>`).join('')}</ol>
+  </div>`;
+
+  h += `<div class="sec">
+    <div class="sec-ttl">Видео-практика</div>
+    <div class="vid-wrap">
+      ${w.videoId
+        ? `<iframe src="https://www.youtube.com/embed/${w.videoId}?rel=0" allowfullscreen loading="lazy"></iframe>`
+        : `<div class="vid-ph">Видео будет добавлено</div>`}
+    </div>
+  </div>`;
+
+  return h;
+}
+
+function toggle(i) {
+  const wasOpen = active === i;
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('open'));
+  active = wasOpen ? -1 : i;
+  localStorage.setItem('md-week', active);
+  if (!wasOpen) {
+    const card = document.getElementById(`c${i}`);
+    card.classList.add('open');
+    setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+render();
+</script>
+</body>
+</html>

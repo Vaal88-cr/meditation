@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="110" fill="#f8f5f0"/>
+  <!-- Lotus petals -->
+  <ellipse cx="256" cy="210" rx="36" ry="80" fill="#c9a97a" opacity="0.95"/>
+  <ellipse cx="256" cy="210" rx="36" ry="80" fill="#c9a97a" opacity="0.8" transform="rotate(-50 256 310)"/>
+  <ellipse cx="256" cy="210" rx="36" ry="80" fill="#c9a97a" opacity="0.8" transform="rotate(50 256 310)"/>
+  <ellipse cx="256" cy="210" rx="32" ry="70" fill="#c9a97a" opacity="0.55" transform="rotate(-82 256 310)"/>
+  <ellipse cx="256" cy="210" rx="32" ry="70" fill="#c9a97a" opacity="0.55" transform="rotate(82 256 310)"/>
+  <!-- Center circle -->
+  <circle cx="256" cy="310" r="48" fill="#8b7355"/>
+  <!-- Water base line -->
+  <path d="M130 380 Q256 352 382 380" stroke="#c9a97a" stroke-width="12" fill="none" stroke-linecap="round"/>
+</svg>
